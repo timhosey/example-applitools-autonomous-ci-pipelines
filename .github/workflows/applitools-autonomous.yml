@@ -33,14 +33,12 @@ jobs:
             -H "Content-Type: application/json" \
             -d '{}')
 
-          echo "Execute response: $RESPONSE"
-
           # Extract run id and read_token from result (response: { "result": { "id": "...", "read_token": "..." } })
           RUN_ID=$(echo "$RESPONSE" | jq -r '.result.id // .run_id // empty')
           READ_TOKEN=$(echo "$RESPONSE" | jq -r '.result.read_token // .read_token // empty')
 
           if [ -z "$RUN_ID" ] || [ "$RUN_ID" = "null" ]; then
-            echo "Failed to retrieve run_id from execute response"
+            echo "Failed to retrieve run_id from execute response (response body omitted for privacy)."
             exit 1
           fi
 
@@ -81,9 +79,6 @@ jobs:
             RESULT_JSON=$(curl -sS -X GET "$URL" -w "\n%{http_code}" 2>/dev/null) || true
             HTTP_CODE=$(echo "$RESULT_JSON" | tail -n1)
             RESULT_JSON=$(echo "$RESULT_JSON" | sed '$d')
-
-            echo "Result payload:"
-            echo "$RESULT_JSON"
 
             if [ -z "$RESULT_JSON" ] || [ "$HTTP_CODE" != "200" ]; then
               echo "Connection failure or non-200 (http_code=$HTTP_CODE), will retry..."
